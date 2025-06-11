@@ -295,10 +295,10 @@ void lexical_analyzer(const char *file_name) {
 
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                //  //parse_keywords(buffer);
-                //  parse_operators(buffer);
-                //  parse_punctuators(buffer);
-                //  parse_identifiers(buffer);
+                parse_keywords(buffer);
+                parse_operators(buffer);
+                parse_punctuators(buffer);
+                parse_identifiers(buffer);
                 parse_literals(buffer);
         }
         rewind(file);
