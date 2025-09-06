@@ -1,6 +1,10 @@
-/* */
+#include "lexical/lexi.h"
+#include <stdio.h>
 
-/*
- * Lexical Analyzer
- * Syntax Analyzer
- */
+int main(void) {
+        printf("This is compiler project for fun!\n");
+        char *file = "sample.unn";
+        lexical_analyzer(file);
+
+
+}
