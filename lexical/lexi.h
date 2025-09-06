@@ -71,20 +71,33 @@ typedef enum {
 } PreprocessorDirectives;
 
 typedef enum {
-        INCREEMENT,
-        DECREEMENT,
-        LOGICAL_AND,
-        LOGICAL_OR,
-        LOGICAL_NOT,
-        MODULUS,
         BITWISE_AND,
         BITWISE_OR,
         BITWISE_XOR,
         LEFT_SHIFT,
         RIGHT_SHIFT,
+} bitwise_operators;
+
+typedef enum {
+        INCREEMENT,
+        DECREEMENT,
         TERNARY_OPERATOR,
         HASH
-} operators;
+} misscilenious_operator;
+
+typedef enum {
+        LOGICAL_AND,
+        LOGICAL_OR,
+        LOGICAL_NOT,
+} logical_operators;
+
+typedef enum {
+        ADDITION,
+        SUBTRACTION,
+        DIVIDE,
+        MULTIPLY,
+        MODULUS
+} airthmetic_operators;
 
 typedef enum {
         INT_LITERALS,
@@ -96,13 +109,21 @@ typedef enum {
         BOOLEAN_LITERAL
 } literals;
 
-typedef enum {
-        COMMENT,
-        KEYWORDS,
-        IDENTIFEIERS,
-        SEPARATORS_PUNCTUATORS,
-        OPERATORS,
-        LITERALS
+typedef struct {
+        airthmetic_operators AirthmeticOperator;
+        logical_operators LogicalOperator;
+        bitwise_operators BitwiseOperator;
+        misscilenious_operator xOperator;
+} operators;
+
+typedef struct {
+        comment comment_operator;
+        ReservedKeywords keyword_operator;
+        operators operator_handler;
+        literals literal_operators;
+        separators_punctuators separator_operator;
+        char *identifiers;
+        char *error_msg;
 } tokenizerType;
 
 /* single-line comment/multi-line comment */
@@ -110,11 +131,6 @@ typedef struct {
         comment s_comment;
         comment m_comment;
 } Comment;
-
-/* variable naming */
-typedef struct {
-        char *identifier;
-} Identifiers;
 
 typedef struct {
         ReservedKeywords reserver_keywords;
@@ -126,6 +142,7 @@ typedef struct {
         tokenizerType type;
 } tokenizer;
 
-tokenizer parse_operators( char);
+tokenizer parse_identifiers(char);
+tokenizer parse_operators(char);
 void lexical_analyzer(const char *);
 #endif
