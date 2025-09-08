@@ -1,71 +1,114 @@
 #include "lexi.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-//
 
-tokenizer parse_operators(char current) {
-        tokenizer token = {
-            0,
-        };
+tokenizer *head = NULL;
+static char delimeter[] = " ";
 
-        switch (current) {
-        case '+':
-                token.token_value = &current;
-                token.type.operator_handler.AirthmeticOperator = ADDITION;
-                printf("token value: %c\t token type: %d", *token.token_value,
-                       token.type.operator_handler.AirthmeticOperator);
-                break;
-        case '=':
-                token.token_value = &current;
-                token.type.separator_operator = EQUAL;
-                printf("token value: %c\t token type: %d", *token.token_value,
-                       token.type.separator_operator);
-                break;
-        case '*':
-                token.token_value = &current;
-                token.type.operator_handler.AirthmeticOperator = MULTIPLY;
-                printf("token value: %c\t token type: %d", *token.token_value,
-                       token.type.operator_handler.AirthmeticOperator);
-                break;
-        case '/':
-                token.token_value = &current;
-                token.type.operator_handler.AirthmeticOperator = DIVIDE;
-                printf("token value: %c\t token type: %d", *token.token_value,
-                       token.type.operator_handler.AirthmeticOperator);
-                break;
-        default:
-                token.token_value = 0;
-                token.type.error_msg = "Invalid operator";
+tokenizer *insert_to_list(char *value, char *type) {
+
+        tokenizer *new_token = (tokenizer *)malloc(sizeof(tokenizer));
+        if (!new_token)
+                return new_token;
+
+        new_token->value = (char *)malloc(strlen(value) + 1);
+        new_token->type = (char *)malloc(strlen(type) + 1);
+        new_token->next = NULL;
+
+        if (!new_token->value || !new_token->type) {
+                fprintf(stderr, "Error in memory allocation\n");
+                free(new_token->value);
+                free(new_token->type);
+                free(new_token);
         }
 
-        return token;
+        strcpy(new_token->value, value);
+        strcpy(new_token->type, type);
+        new_token->next = NULL;
+
+        if (head == NULL) {
+                head = new_token;
+        } else {
+                tokenizer *curr = head;
+                while (curr->next != NULL) {
+                        curr = curr->next;
+                }
+                curr->next = new_token;
+        }
+
+        return new_token;
+}
+
+tokenizer *parse_keywords(char *current) {
+        char *token;
+        token = strtok(current, delimeter);
+
+        while (token != NULL) {
+                for (int i = 0; token[i] != '\0'; i++) {
+                        if (strcmp(token, "int"))
+                                printf("val %c", token[i]);
+                }
+                token = strtok(NULL, delimeter);
+        }
+        return NULL;
+}
+
+tokenizer *parse_operators(char *current) {
+
+        if (*current == '+' || *current == '-' || *current == '/' ||
+            *current == '*') {
+                char temp_val[2];
+                temp_val[0] = *current;
+                temp_val[1] = '\0';
+                char *type = "Separator";
+                return insert_to_list(temp_val, type);
+        }
+
+        return NULL;
 }
 
 /* Some bugs are here. */
-tokenizer parse_identifiers(char current) {
-        tokenizer token = {
-            0,
-        };
+tokenizer *parse_punctuators(char *current) {
 
-        char *data_type = "int";
-        char *start = strchr(&current, ' ');
-        if (start) {
-                while (*start == *data_type || *start == ' ')
-                        start++;
+        char *token;
+        token = strtok(current, delimeter);
 
-                char *end = start;
-                while (*end != ';' && *end != ' ' && *end != '\t' &&
-                       *end != '\0')
-                        end++;
-                int len = end - start;
-                char identifier[len + 1];
-                strncpy(identifier, start, len);
-                printf("Debug: %s\n", identifier);
-                printf("Debug End: %s\n", end);
+        while (token != NULL) {
+                for (int i = 0; token[i] != '\0'; i++) {
+                        if (token[i] == '{' || token[i] == '}' ||
+                            token[i] == '(' || token[i] == ')' ||
+                            token[i] == ',' || token[i] == '.' ||
+                            token[i] == ';' || token[i] == ':') {
+                                char temp_val[2];
+                                temp_val[0] = token[i];
+                                temp_val[1] = '\0';
+                                insert_to_list(temp_val, "Separator");
+                        }
+                }
+                token = strtok(NULL, delimeter);
         }
+        return NULL;
+}
 
-        // printf("Value: %s", start);
-        return token;
+void printToken() {
+        tokenizer *p = head;
+        while (p->next != NULL) {
+                printf("Type: %s\tValue: %s\n", p->type, p->value);
+                p = p->next;
+        }
+}
+
+void free_tokens() {
+        tokenizer *curr = head;
+        while (curr != NULL) {
+                tokenizer *next = curr->next;
+                free(curr->value);
+                free(curr->type);
+                free(curr);
+                curr = next;
+        }
+        head = NULL;
 }
 
 void lexical_analyzer(const char *file_name) {
@@ -78,15 +121,15 @@ void lexical_analyzer(const char *file_name) {
                 return;
         }
 
-        printf("File contents\n");
-        // char buffer[1024];
-        char current = fgetc(file);
-        while (current != EOF) {
-                // printf("%c\n", current);
-                parse_operators(current);
-                // parse_identifiers(current);
-                current = fgetc(file);
+        char buffer[1024];
+        while (fgets(buffer, sizeof(buffer), file) != NULL) {
+                if (*buffer == '\t' || *buffer == '\n' || *buffer == '\0') {
+                        continue;
+                }
+                // parse_punctuators(buffer);
+                parse_keywords(buffer);
         }
 
         fclose(file);
+        printToken();
 }
