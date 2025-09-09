@@ -1,4 +1,6 @@
 #include "lexi.h"
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,8 +11,11 @@ static char delimeter[] = " ";
 tokenizer *insert_to_list(char *value, char *type) {
 
         tokenizer *new_token = (tokenizer *)malloc(sizeof(tokenizer));
-        if (!new_token)
-                return new_token;
+        if (!new_token) {
+                fprintf(stderr,
+                        "Error while allocating memory for 'new_token'\n");
+                EXIT_FAILURE;
+        }
 
         new_token->value = (char *)malloc(strlen(value) + 1);
         new_token->type = (char *)malloc(strlen(type) + 1);
@@ -40,15 +45,51 @@ tokenizer *insert_to_list(char *value, char *type) {
         return new_token;
 }
 
+char *isKeyword(char *current) {
+        const char *keyword_dict[] = {"if",     "int",   "switch", "for",
+                                      "else",   "while", "do",     "return",
+                                      "exit",   "main",  "void",   "float",
+                                      "double", "char",  "bool",   "_Bool"};
+        int dict_size = sizeof(keyword_dict) / sizeof(keyword_dict[0]);
+        // printf("Source: %s\n", current);
+
+        for (int i = 0; i < dict_size; i++) {
+
+                if (strcmp(current, keyword_dict[i]) == 0) {
+                        char *value = (char *)malloc(strlen(current) + 1);
+                        strcpy(value, keyword_dict[i]);
+                        return value;
+                }
+        }
+
+        char *value = malloc(5);
+        strcpy(value, "null");
+        return value;
+}
+
 tokenizer *parse_keywords(char *current) {
         char *token;
         token = strtok(current, delimeter);
 
         while (token != NULL) {
-                for (int i = 0; token[i] != '\0'; i++) {
-                        if (strcmp(token, "int"))
-                                printf("val %c", token[i]);
+                char *getKeywords = isKeyword(token);
+                if (!getKeywords) {
+                        free(getKeywords);
+                        getKeywords = NULL;
+                        goto nextLine;
                 }
+
+                char *temp_val = getKeywords;
+                // printf("Debug: Parse %s\t Source: %s\n", temp_val, token);
+                if (strcmp(temp_val, "null") == 0)
+                        temp_val = NULL;
+
+                if (temp_val != NULL)
+                        insert_to_list(temp_val, "KEYWORD");
+
+                free(getKeywords);
+
+        nextLine:
                 token = strtok(NULL, delimeter);
         }
         return NULL;
@@ -61,40 +102,53 @@ tokenizer *parse_operators(char *current) {
                 char temp_val[2];
                 temp_val[0] = *current;
                 temp_val[1] = '\0';
-                char *type = "Separator";
+                char *type = "OPERATOR";
                 return insert_to_list(temp_val, type);
         }
 
         return NULL;
 }
 
-/* Some bugs are here. */
+bool isPunctuator(char *current) {
+
+        bool is_punc = false;
+        for (int i = 0; current[i] != '\0'; i++) {
+                if (current[i] == ')' || current[i] == '(' ||
+                    current[i] == '}' || current[i] == '{' ||
+                    current[i] == ';' || current[i] == ':' ||
+                    current[i] == '?' || current[i] == ',') {
+                        is_punc = true;
+                        char punc = current[i];
+                        // printf("found val: %c\t", *punctuator);
+                        insert_to_list(&punc, "SEPARATOR");
+                }
+        }
+
+        return is_punc;
+}
+
 tokenizer *parse_punctuators(char *current) {
 
         char *token;
         token = strtok(current, delimeter);
 
         while (token != NULL) {
-                for (int i = 0; token[i] != '\0'; i++) {
-                        if (token[i] == '{' || token[i] == '}' ||
-                            token[i] == '(' || token[i] == ')' ||
-                            token[i] == ',' || token[i] == '.' ||
-                            token[i] == ';' || token[i] == ':') {
-                                char temp_val[2];
-                                temp_val[0] = token[i];
-                                temp_val[1] = '\0';
-                                insert_to_list(temp_val, "Separator");
-                        }
-                }
+                bool ispunc = isPunctuator(token);
+                // printf("is punc: %d\n", ispunc);
+                if (!ispunc)
+                        goto goNext;
+
+        goNext:
                 token = strtok(NULL, delimeter);
         }
         return NULL;
 }
 
 void printToken() {
+
         tokenizer *p = head;
-        while (p->next != NULL) {
-                printf("Type: %s\tValue: %s\n", p->type, p->value);
+        while (p != NULL) {
+                printf("Token -> type: %s\tvalue: %s\n", p->type, p->value);
                 p = p->next;
         }
 }
@@ -126,7 +180,8 @@ void lexical_analyzer(const char *file_name) {
                 if (*buffer == '\t' || *buffer == '\n' || *buffer == '\0') {
                         continue;
                 }
-                // parse_punctuators(buffer);
+                parse_punctuators(buffer);
+
                 parse_keywords(buffer);
         }
 
