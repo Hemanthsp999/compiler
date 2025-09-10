@@ -1,7 +1,7 @@
 #ifndef LEXI_
 #define LEXI_
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 typedef struct tokens {
         char *value;
@@ -9,12 +9,13 @@ typedef struct tokens {
         struct tokens *next;
 } tokenizer;
 
-tokenizer *parse_punctuators(char *);
-tokenizer *insert_to_tokens(char*, char*, tokenizer **);
-tokenizer *parse_operators(char *);
-tokenizer *parse_keywords(char*);
-char* isKeyword(char*);
-bool isPunctuator(char*);
+bool isKeyword(char *);
+bool isOperators(char *);
+bool isPunctuator(char *);
+void *parse_punctuators(char *);
+void *insert_to_tokens(char *, char *, tokenizer **);
+void *parse_operators(char *);
+void *parse_keywords(char *);
 void lexical_analyzer(const char *);
 void printToken();
 void free_tokens();

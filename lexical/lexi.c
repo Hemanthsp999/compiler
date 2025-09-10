@@ -1,4 +1,5 @@
 #include "lexi.h"
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -8,7 +9,7 @@
 tokenizer *head = NULL;
 static char delimeter[] = " ";
 
-tokenizer *insert_to_list(char *value, char *type) {
+void *insert_to_list(char *value, char *type) {
 
         tokenizer *new_token = (tokenizer *)malloc(sizeof(tokenizer));
         if (!new_token) {
@@ -45,68 +46,87 @@ tokenizer *insert_to_list(char *value, char *type) {
         return new_token;
 }
 
-char *isKeyword(char *current) {
-        const char *keyword_dict[] = {"if",     "int",   "switch", "for",
-                                      "else",   "while", "do",     "return",
-                                      "exit",   "main",  "void",   "float",
-                                      "double", "char",  "bool",   "_Bool"};
-        int dict_size = sizeof(keyword_dict) / sizeof(keyword_dict[0]);
-        // printf("Source: %s\n", current);
+bool isKeyword(char *word) {
+        const char *keyword_dict[] = {"int",      "if",    "else",  "return",
+                                      "void",     "char",  "float", "double",
+                                      "void",     "short", "long",  "signed",
+                                      "unsigned", "bool",  NULL};
+        bool iskeywords = false;
 
-        for (int i = 0; i < dict_size; i++) {
-
-                if (strcmp(current, keyword_dict[i]) == 0) {
-                        char *value = (char *)malloc(strlen(current) + 1);
-                        strcpy(value, keyword_dict[i]);
-                        return value;
+        for (int i = 0; keyword_dict[i] != NULL; i++) {
+                if (strcmp(word, keyword_dict[i]) == 0) {
+                        iskeywords = true;
+                        // printf("val: %s\t", word);
+                        insert_to_list(word, "KEYWORD");
                 }
         }
 
-        char *value = malloc(5);
-        strcpy(value, "null");
-        return value;
+        return iskeywords;
 }
 
-tokenizer *parse_keywords(char *current) {
-        char *token;
-        token = strtok(current, delimeter);
+void *parse_keywords(char *inputLine) {
 
-        while (token != NULL) {
-                char *getKeywords = isKeyword(token);
-                if (!getKeywords) {
-                        free(getKeywords);
-                        getKeywords = NULL;
-                        goto nextLine;
+        char buffer[100];
+        uint j = 0;
+
+        int inputLen = strlen(inputLine);
+        for (int i = 0; i <= inputLen; i++) {
+                char word = inputLine[i];
+
+                if (isalnum(word) || word == '_') {
+                        if (j < sizeof(buffer) - 1) {
+                                buffer[j++] = word;
+                        }
+                } else {
+                        if (j > 0) {
+                                buffer[j] = '\0';
+                                if (!isKeyword(buffer))
+                                        continue;
+                                j = 0;
+                        }
+                }
+        }
+        return 0;
+}
+
+bool isOperators(char *word) {
+
+        const char *operators_dict[] = {
+            "+",  "-",  "*",  "/",  "%",  "=",  "&&", "||", "!",
+            "&",  "|",  "^",  "~",  "++", "--", "==", "!=", "/=",
+            "+=", "-=", "*=", "%=", ">",  "<",  ">=", "<=", NULL};
+
+        for (int i = 0; operators_dict[i] != NULL; i++) {
+                if (strcmp(word, operators_dict[i]) == 0) {
+                        insert_to_list(word, "OPERATOR");
+                        return true;
+                }
+        }
+
+        return false;
+}
+
+void *parse_operators(char *input_line) {
+
+        char buffer[3] = {0};
+        int len = strlen(input_line);
+        for (int i = 0; i < len; i++) {
+                buffer[0] = input_line[i];
+                buffer[1] = input_line[i + 1];
+                buffer[2] = '\0';
+
+                if (isOperators(buffer)) {
+                        printf("Operator found: %s\n", buffer);
+                        i++;
+                        continue;
                 }
 
-                char *temp_val = getKeywords;
-                // printf("Debug: Parse %s\t Source: %s\n", temp_val, token);
-                if (strcmp(temp_val, "null") == 0)
-                        temp_val = NULL;
-
-                if (temp_val != NULL)
-                        insert_to_list(temp_val, "KEYWORD");
-
-                free(getKeywords);
-
-        nextLine:
-                token = strtok(NULL, delimeter);
-        }
-        return NULL;
-}
-
-tokenizer *parse_operators(char *current) {
-
-        if (*current == '+' || *current == '-' || *current == '/' ||
-            *current == '*') {
-                char temp_val[2];
-                temp_val[0] = *current;
-                temp_val[1] = '\0';
-                char *type = "OPERATOR";
-                return insert_to_list(temp_val, type);
+                buffer[1] = '\0';
+                if (isOperators(buffer))
+                        printf("Operator found: %s\n", buffer);
         }
 
-        return NULL;
+        return 0;
 }
 
 bool isPunctuator(char *current) {
@@ -127,21 +147,21 @@ bool isPunctuator(char *current) {
         return is_punc;
 }
 
-tokenizer *parse_punctuators(char *current) {
+void *parse_punctuators(char *input_line) {
 
         char *token;
-        token = strtok(current, delimeter);
+        token = strtok(input_line, delimeter);
 
         while (token != NULL) {
                 bool ispunc = isPunctuator(token);
-                // printf("is punc: %d\n", ispunc);
                 if (!ispunc)
-                        goto goNext;
+                        goto NextToken;
 
-        goNext:
+        NextToken:
                 token = strtok(NULL, delimeter);
         }
-        return NULL;
+
+        return 0;
 }
 
 void printToken() {
@@ -180,9 +200,9 @@ void lexical_analyzer(const char *file_name) {
                 if (*buffer == '\t' || *buffer == '\n' || *buffer == '\0') {
                         continue;
                 }
-                parse_punctuators(buffer);
-
-                parse_keywords(buffer);
+                //parse_keywords(buffer);
+                //parse_punctuators(buffer);
+                parse_operators(buffer);
         }
 
         fclose(file);
