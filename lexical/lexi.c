@@ -9,7 +9,20 @@
 tokenizer *head = NULL;
 static char delimeter[] = " ";
 
-void *insert_to_list(char *value, char *type) {
+const char *keyword_dict[] = {
+    "int",  "continue", "if",       "else", "return", "void",
+    "char", "float",    "double",   "void", "short",  "_Bool",
+    "long", "signed",   "unsigned", "bool", NULL};
+
+const char *operators_dict[] = {"+",  "-",  "*",  "/",  "%",  "=",  "&&",
+                                "||", "!",  "&",  "|",  "^",  "~",  "++",
+                                "--", "==", "!=", "/=", "+=", "-=", "*=",
+                                "%=", ">",  "<",  ">=", "<=", NULL};
+
+const char *punc_dict[] = {"}", "{", ")", "(", "]", "[",
+                           "?", ":", ";", ",", NULL};
+
+void *insert_to_list(const char *value, char *type) {
 
         tokenizer *new_token = (tokenizer *)malloc(sizeof(tokenizer));
         if (!new_token) {
@@ -46,22 +59,14 @@ void *insert_to_list(char *value, char *type) {
         return new_token;
 }
 
-bool isKeyword(char *word) {
-        const char *keyword_dict[] = {"int",      "if",    "else",  "return",
-                                      "void",     "char",  "float", "double",
-                                      "void",     "short", "long",  "signed",
-                                      "unsigned", "bool",  NULL};
-        bool iskeywords = false;
+bool isKeyword(const char *word) {
 
         for (int i = 0; keyword_dict[i] != NULL; i++) {
-                if (strcmp(word, keyword_dict[i]) == 0) {
-                        iskeywords = true;
-                        // printf("val: %s\t", word);
-                        insert_to_list(word, "KEYWORD");
-                }
+                if (strcmp(word, keyword_dict[i]) == 0)
+                        return true;
         }
 
-        return iskeywords;
+        return false;
 }
 
 void *parse_keywords(char *inputLine) {
@@ -80,8 +85,8 @@ void *parse_keywords(char *inputLine) {
                 } else {
                         if (j > 0) {
                                 buffer[j] = '\0';
-                                if (!isKeyword(buffer))
-                                        continue;
+                                if (isKeyword(buffer))
+                                        insert_to_list(buffer, "KEYWORD");
                                 j = 0;
                         }
                 }
@@ -89,18 +94,11 @@ void *parse_keywords(char *inputLine) {
         return 0;
 }
 
-bool isOperators(char *word) {
-
-        const char *operators_dict[] = {
-            "+",  "-",  "*",  "/",  "%",  "=",  "&&", "||", "!",
-            "&",  "|",  "^",  "~",  "++", "--", "==", "!=", "/=",
-            "+=", "-=", "*=", "%=", ">",  "<",  ">=", "<=", NULL};
+bool isOperators(const char *word) {
 
         for (int i = 0; operators_dict[i] != NULL; i++) {
-                if (strcmp(word, operators_dict[i]) == 0) {
-                        insert_to_list(word, "OPERATOR");
+                if (strcmp(word, operators_dict[i]) == 0)
                         return true;
-                }
         }
 
         return false;
@@ -116,73 +114,67 @@ void *parse_operators(char *input_line) {
                 buffer[2] = '\0';
 
                 if (isOperators(buffer)) {
-                        printf("Operator found: %s\n", buffer);
+                        insert_to_list(buffer, "OPERATOR");
                         i++;
                         continue;
                 }
 
                 buffer[1] = '\0';
-                if (isOperators(buffer))
-                        printf("Operator found: %s\n", buffer);
+                if (isOperators(buffer)) {
+                        insert_to_list(buffer, "OPERATOR");
+                        continue;
+                }
         }
 
         return 0;
 }
 
-bool isPunctuator(char *current) {
+void *parse_identifiers(char *input_line) {
 
-        bool is_punc = false;
-        for (int i = 0; current[i] != '\0'; i++) {
-                if (current[i] == ')' || current[i] == '(' ||
-                    current[i] == '}' || current[i] == '{' ||
-                    current[i] == ';' || current[i] == ':' ||
-                    current[i] == '?' || current[i] == ',') {
-                        is_punc = true;
-                        char punc = current[i];
-                        // printf("found val: %c\t", *punctuator);
-                        insert_to_list(&punc, "SEPARATOR");
-                }
-        }
-
-        return is_punc;
-}
-
-void *parse_punctuators(char *input_line) {
-
-        char *token;
-        token = strtok(input_line, delimeter);
-
+        char *token = strtok(input_line, delimeter);
         while (token != NULL) {
-                bool ispunc = isPunctuator(token);
-                if (!ispunc)
-                        goto NextToken;
+                if (!parse_keywords(token) || !parse_punctuators(token) ||
+                    !parse_operators(token)) {
+                        printf("val: %s\n", token);
+                }
 
-        NextToken:
                 token = strtok(NULL, delimeter);
         }
 
         return 0;
 }
 
-void printToken() {
+bool isPunctuator(const char *word) {
 
-        tokenizer *p = head;
-        while (p != NULL) {
-                printf("Token -> type: %s\tvalue: %s\n", p->type, p->value);
-                p = p->next;
+        for (int i = 0; punc_dict[i] != NULL; i++) {
+                if (strcmp(word, punc_dict[i]) == 0)
+                        return true;
         }
+        return false;
 }
 
-void free_tokens() {
-        tokenizer *curr = head;
-        while (curr != NULL) {
-                tokenizer *next = curr->next;
-                free(curr->value);
-                free(curr->type);
-                free(curr);
-                curr = next;
+void *parse_punctuators(char *input_line) {
+
+        char buffer[3];
+        int len = strlen(input_line);
+
+        for (int i = 0; i <= len; i++) {
+                buffer[0] = input_line[i];
+                buffer[1] = input_line[i + 1];
+                buffer[2] = '\0';
+
+                if (isPunctuator(buffer)) {
+                        insert_to_list(buffer, "PUNCTUATOR");
+                        i++;
+                        continue;
+                }
+
+                buffer[1] = '\0';
+                if (isPunctuator(buffer)) {
+                        insert_to_list(buffer, "PUNCTUATOR");
+                }
         }
-        head = NULL;
+        return 0;
 }
 
 void lexical_analyzer(const char *file_name) {
@@ -197,14 +189,34 @@ void lexical_analyzer(const char *file_name) {
 
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                if (*buffer == '\t' || *buffer == '\n' || *buffer == '\0') {
-                        continue;
-                }
-                //parse_keywords(buffer);
-                //parse_punctuators(buffer);
-                parse_operators(buffer);
+                // parse_keywords(buffer);
+                // parse_operators(buffer);
+                // parse_punctuators(buffer);
+                parse_identifiers(buffer);
         }
+        rewind(file);
 
         fclose(file);
-        printToken();
+        // printToken();
+}
+
+void printToken() {
+
+        tokenizer *p = head;
+        while (p != NULL) {
+                printf("Token -> ID: %s\tvalue: %s\n", p->type, p->value);
+                p = p->next;
+        }
+}
+
+void free_tokens() {
+        tokenizer *curr = head;
+        while (curr != NULL) {
+                tokenizer *next = curr->next;
+                free(curr->value);
+                free(curr->type);
+                free(curr);
+                curr = next;
+        }
+        head = NULL;
 }
