@@ -129,18 +129,20 @@ void *parse_operators(char *input_line) {
         return 0;
 }
 
+bool isIdentifiers(char *word) {
+        if (word[0] <= '9' || word[0] >= '0')
+                return false;
+
+        return false;
+}
+
+/* facing problem */
 void *parse_identifiers(char *input_line) {
 
-        char *token = strtok(input_line, delimeter);
-        while (token != NULL) {
-                if (!parse_keywords(token) || !parse_punctuators(token) ||
-                    !parse_operators(token)) {
-                        printf("val: %s\n", token);
-                }
-
-                token = strtok(NULL, delimeter);
+        char buffer[100];
+        int length = strlen(input_line);
+        for () {
         }
-
         return 0;
 }
 
@@ -170,9 +172,8 @@ void *parse_punctuators(char *input_line) {
                 }
 
                 buffer[1] = '\0';
-                if (isPunctuator(buffer)) {
+                if (isPunctuator(buffer))
                         insert_to_list(buffer, "PUNCTUATOR");
-                }
         }
         return 0;
 }
@@ -189,9 +190,9 @@ void lexical_analyzer(const char *file_name) {
 
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                parse_keywords(buffer);
-                parse_operators(buffer);
-                parse_punctuators(buffer);
+                // parse_keywords(buffer);
+                // parse_operators(buffer);
+                // parse_punctuators(buffer);
                 parse_identifiers(buffer);
         }
         rewind(file);
