@@ -10,9 +10,9 @@ tokenizer *head = NULL;
 // static char delimeter[] = " ";
 
 const char *keyword_dict[] = {
-    "include",       "int",      "continue", "if",   "else",
-    "return",  "void",  "char",   "float",    "double",   "void", "short",
-    "_Bool",   "long",  "signed", "unsigned", "bool",     NULL};
+    "include", "int",  "continue", "if",       "else", "return",
+    "void",    "char", "float",    "double",   "void", "short",
+    "_Bool",   "long", "signed",   "unsigned", "bool", NULL};
 
 const char *operators_dict[] = {"+",  "-",  "*",  "/",  "%",  "=",  "&&",
                                 "||", "!",  "&",  "|",  "^",  "~",  "++",
@@ -129,16 +129,6 @@ void *parse_operators(char *input_line) {
         return 0;
 }
 
-bool isIdentifiers(char *word) {
-        if (word[0] == '!' || word[0] == '1' || word[0] == '2' ||
-            word[0] == '3' || word[0] == '4' || word[0] == '5' ||
-            word[0] == '6' || word[0] == '7' || word[0] == '8' ||
-            word[0] == '9' || word[0] == '0' || word[0] == '#')
-                return false;
-
-        return true;
-}
-
 /* facing problem */
 void *parse_identifiers(char *input_line) {
         char buffer[256];
@@ -180,6 +170,11 @@ bool isPunctuator(const char *word) {
         return false;
 }
 
+void *parse_literals(char *input_line) { 
+    printf("line: %s\n", input_line);
+    return 0; 
+}
+
 void *parse_punctuators(char *input_line) {
 
         char buffer[3];
@@ -215,10 +210,11 @@ void lexical_analyzer(const char *file_name) {
 
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                parse_keywords(buffer);
-                parse_operators(buffer);
-                parse_punctuators(buffer);
-                parse_identifiers(buffer);
+                //parse_keywords(buffer);
+                //parse_operators(buffer);
+                //parse_punctuators(buffer);
+                //parse_identifiers(buffer);
+        parse_literals(buffer);
         }
         rewind(file);
 
@@ -230,7 +226,7 @@ void printToken() {
 
         tokenizer *p = head;
         while (p != NULL) {
-                printf("Token -> ID: %s\tvalue: %s\n", p->type, p->value);
+                printf("Token -> ID: %s\t value: %s\n", p->type, p->value);
                 p = p->next;
         }
 }
