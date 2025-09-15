@@ -7,12 +7,12 @@
 #include <string.h>
 
 tokenizer *head = NULL;
-static char delimeter[] = " ";
+// static char delimeter[] = " ";
 
 const char *keyword_dict[] = {
-    "int",  "continue", "if",       "else", "return", "void",
-    "char", "float",    "double",   "void", "short",  "_Bool",
-    "long", "signed",   "unsigned", "bool", NULL};
+    "include",       "int",      "continue", "if",   "else",
+    "return",  "void",  "char",   "float",    "double",   "void", "short",
+    "_Bool",   "long",  "signed", "unsigned", "bool",     NULL};
 
 const char *operators_dict[] = {"+",  "-",  "*",  "/",  "%",  "=",  "&&",
                                 "||", "!",  "&",  "|",  "^",  "~",  "++",
@@ -130,19 +130,44 @@ void *parse_operators(char *input_line) {
 }
 
 bool isIdentifiers(char *word) {
-        if (word[0] <= '9' || word[0] >= '0')
+        if (word[0] == '!' || word[0] == '1' || word[0] == '2' ||
+            word[0] == '3' || word[0] == '4' || word[0] == '5' ||
+            word[0] == '6' || word[0] == '7' || word[0] == '8' ||
+            word[0] == '9' || word[0] == '0' || word[0] == '#')
                 return false;
 
-        return false;
+        return true;
 }
 
 /* facing problem */
 void *parse_identifiers(char *input_line) {
-
-        char buffer[100];
+        char buffer[256];
+        uint j = 0;
         int length = strlen(input_line);
-        for () {
+
+        for (int i = 0; i <= length; i++) {
+                char character = input_line[i];
+
+                if (isdigit(character))
+                        continue;
+                if (isalnum(character) || character == '_') {
+                        if (j < sizeof(buffer) - 1) {
+                                buffer[j++] = character;
+                        }
+                } else {
+                        if (j > 0) {
+                                buffer[j] = '\0';
+                                if (!isKeyword(buffer) &&
+                                    !isOperators(buffer) &&
+                                    !isPunctuator(buffer)) {
+                                        printf("word: %s\n", buffer);
+                                        insert_to_list(buffer, "IDENTIFIER");
+                                }
+                                j = 0;
+                        }
+                }
         }
+
         return 0;
 }
 
@@ -190,9 +215,9 @@ void lexical_analyzer(const char *file_name) {
 
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                // parse_keywords(buffer);
-                // parse_operators(buffer);
-                // parse_punctuators(buffer);
+                parse_keywords(buffer);
+                parse_operators(buffer);
+                parse_punctuators(buffer);
                 parse_identifiers(buffer);
         }
         rewind(file);
