@@ -129,6 +129,12 @@ void *parse_operators(char *input_line) {
         return 0;
 }
 
+bool isIdentifier(const char *word) {
+        if (!isKeyword(word) && !isPunctuator(word) && !isOperators(word))
+                return true;
+        return false;
+}
+
 /* facing problem */
 void *parse_identifiers(char *input_line) {
         char buffer[256];
@@ -147,9 +153,7 @@ void *parse_identifiers(char *input_line) {
                 } else {
                         if (j > 0) {
                                 buffer[j] = '\0';
-                                if (!isKeyword(buffer) &&
-                                    !isOperators(buffer) &&
-                                    !isPunctuator(buffer)) {
+                                if (isIdentifier(buffer)) {
                                         printf("word: %s\n", buffer);
                                         insert_to_list(buffer, "IDENTIFIER");
                                 }
@@ -170,9 +174,13 @@ bool isPunctuator(const char *word) {
         return false;
 }
 
-void *parse_literals(char *input_line) { 
-    printf("line: %s\n", input_line);
-    return 0; 
+void *parse_literals(char *input_line) {
+        int len = strlen(input_line);
+        for (int i = 0; i <= len; i++) {
+                if (input_line[i] == '=')
+                        printf("literals: %s\n", input_line);
+        }
+        return 0;
 }
 
 void *parse_punctuators(char *input_line) {
@@ -210,11 +218,11 @@ void lexical_analyzer(const char *file_name) {
 
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                //parse_keywords(buffer);
-                //parse_operators(buffer);
-                //parse_punctuators(buffer);
-                //parse_identifiers(buffer);
-        parse_literals(buffer);
+                // parse_keywords(buffer);
+                // parse_operators(buffer);
+                // parse_punctuators(buffer);
+                // parse_identifiers(buffer);
+                parse_literals(buffer);
         }
         rewind(file);
 
