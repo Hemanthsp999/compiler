@@ -154,7 +154,7 @@ void *parse_identifiers(char *input_line) {
                         if (j > 0) {
                                 buffer[j] = '\0';
                                 if (isIdentifier(buffer)) {
-                                        printf("word: %s\n", buffer);
+                                        // printf("word: %s\n", buffer);
                                         insert_to_list(buffer, "IDENTIFIER");
                                 }
                                 j = 0;
@@ -174,12 +174,31 @@ bool isPunctuator(const char *word) {
         return false;
 }
 
-void *parse_literals(char *input_line) {
-        int len = strlen(input_line);
-        for (int i = 0; i <= len; i++) {
-                if (input_line[i] == '=')
-                        printf("literals: %s\n", input_line);
+char *recursive_literal_extractor(const char *line_val, char *buff, int str_len,
+                                  int len) {
+
+        if (line_val[len] == '\0') {
+                return "";
         }
+
+        if (line_val[len] == '=') {
+                int i = 0;
+                while (line_val[len] != '\0') {
+                        buff[i] = line_val[len];
+                        len++;
+                }
+        }
+
+        return recursive_literal_extractor(line_val, buff, str_len, len++);
+}
+
+void *parse_literals(char *input_line) {
+
+        int len = strlen(input_line);
+        char *buff = malloc(sizeof(input_line));
+
+        recursive_literal_extractor(input_line, buff, len, 0);
+
         return 0;
 }
 
