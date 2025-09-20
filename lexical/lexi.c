@@ -174,31 +174,39 @@ bool isPunctuator(const char *word) {
         return false;
 }
 
-char *recursive_literal_extractor(const char *line_val, char *buff, int str_len,
-                                  int len) {
-
-        if (line_val[len] == '\0') {
-                return "";
+char *recursive_literal_extractor(const char *line_val, char *buff,
+                                  int str_len) {
+        if (line_val[str_len] == '\0') {
+                buff[0] = '\0';
+                return buff;
         }
 
-        if (line_val[len] == '=') {
+        if (line_val[str_len] == '=' || line_val[str_len] == '"') {
+                str_len++;
                 int i = 0;
-                while (line_val[len] != '\0') {
-                        buff[i] = line_val[len];
-                        len++;
+                while (line_val[str_len] != ';') {
+                        if (isalpha(line_val[str_len]) ||
+                            !isdigit(line_val[str_len]))
+                                str_len++;
+                        else
+                                buff[i++] = line_val[str_len++];
                 }
+                buff[i] = '\0';
+                return buff;
         }
 
-        return recursive_literal_extractor(line_val, buff, str_len, len++);
+        return recursive_literal_extractor(line_val, buff, str_len + 1);
 }
 
 void *parse_literals(char *input_line) {
 
-        int len = strlen(input_line);
-        char *buff = malloc(sizeof(input_line));
+        // int len = strlen(input_line);
+        char *buff = malloc(strlen(input_line) + 1);
 
-        recursive_literal_extractor(input_line, buff, len, 0);
+        char *result = recursive_literal_extractor(input_line, buff, 0);
+        printf("Extracted literal: %s\n", result);
 
+        free(buff);
         return 0;
 }
 
@@ -237,10 +245,10 @@ void lexical_analyzer(const char *file_name) {
 
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                // parse_keywords(buffer);
-                // parse_operators(buffer);
-                // parse_punctuators(buffer);
-                // parse_identifiers(buffer);
+                //  //parse_keywords(buffer);
+                //  parse_operators(buffer);
+                //  parse_punctuators(buffer);
+                //  parse_identifiers(buffer);
                 parse_literals(buffer);
         }
         rewind(file);
