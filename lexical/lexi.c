@@ -181,15 +181,19 @@ char *recursive_literal_extractor(const char *line_val, char *buff,
                 return buff;
         }
 
-        if (line_val[str_len] == '=' || line_val[str_len] == '"') {
+        if (line_val[str_len] == '=') {
                 str_len++;
                 int i = 0;
                 while (line_val[str_len] != ';') {
-                        if (isalpha(line_val[str_len]) ||
-                            !isdigit(line_val[str_len]))
-                                str_len++;
-                        else
+                        if (line_val[str_len] == '\"') {
                                 buff[i++] = line_val[str_len++];
+                        } else if (isdigit(line_val[str_len])) {
+                                buff[i++] = line_val[str_len++];
+                        } else if (isdigit(line_val[str_len]) ||
+                                   line_val[str_len] == '.') {
+                                buff[i++] = line_val[str_len++];
+                        } else
+                                str_len++;
                 }
                 buff[i] = '\0';
                 return buff;
