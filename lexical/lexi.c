@@ -196,46 +196,45 @@ Literals *recursive_literal_extractor(const char *line_val, int str_len) {
                 int i = 0;
 
                 char *buff = malloc(strlen(line_val) + 1);
-
-        literal->type = malloc(32);
-                literal->value = malloc(strlen(buff) + 1);
+                literal->type = malloc(64);
                 while (line_val[str_len] != ';') {
-                        if (isdigit(line_val[str_len])) {
-                                strcpy(literal->type, "INT_LITERAL");
+                        if (line_val[str_len] == '.') {
+                                strcpy(literal->type, "FLOAT");
                                 buff[i++] = line_val[str_len++];
-                        } else if ( // isdigit(line_val[str_len])
-                            line_val[str_len] == '.') {
-                                strcpy(literal->type, "FLOAT_LITERAL");
+                        } else if (isdigit(line_val[str_len])) {
+                                strcpy(literal->type, "INT");
                                 buff[i++] = line_val[str_len++];
-
-                        } else if (isalpha(line_val[str_len]) ||
-                                   line_val[str_len] == ' ') {
-                                strcpy(literal->type, "CHAR_LITERAL");
+                        } else if (line_val[str_len] == ' ' ||
+                                   isalpha(line_val[str_len])) {
+                                strcpy(literal->type, "CHAR");
                                 buff[i++] = line_val[str_len++];
-                        } else
+                        } else {
                                 str_len++;
+                        }
                 }
                 buff[i] = '\0';
+                literal->value = malloc(strlen(buff) + 1);
                 strcpy(literal->value, buff);
-
                 free(buff);
+
                 return literal;
         }
 
+        free(literal);
         return recursive_literal_extractor(line_val, str_len + 1);
 }
 
 void *parse_literals(char *input_line) {
 
-        // int len = strlen(input_line);
-        // char *buff = malloc(strlen(input_line) + 1);
+        Literals *is_literal = recursive_literal_extractor(input_line, 0);
 
-        Literals *result = recursive_literal_extractor(input_line, 0);
-        printf("Literal: type: %s\tValue: %s\n", result->type, result->value);
+        if (is_literal->type && is_literal->value)
+                printf("valid literals: type: %s\tValue: %s\n",
+                       is_literal->type, is_literal->value);
 
-        free(result->type);
-        free(result->value);
-        free(result);
+        free(is_literal->value);
+        free(is_literal->type);
+        free(is_literal);
         return 0;
 }
 
