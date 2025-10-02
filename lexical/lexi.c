@@ -174,44 +174,68 @@ bool isPunctuator(const char *word) {
         return false;
 }
 
-char *recursive_literal_extractor(const char *line_val, char *buff,
-                                  int str_len) {
+/* recursively extracts literal */
+Literals *recursive_literal_extractor(const char *line_val, int str_len) {
+
+        Literals *literal = malloc(sizeof(Literals));
+        if (!literal) {
+                fprintf(stderr, "Error while allocation.");
+                exit(EXIT_FAILURE);
+        }
+
         if (line_val[str_len] == '\0') {
-                buff[0] = '\0';
-                return buff;
+                literal->type = NULL;
+                literal->value = NULL;
+
+                // buff[0] = '\0';
+                return literal;
         }
 
         if (line_val[str_len] == '=') {
                 str_len++;
                 int i = 0;
 
+                char *buff = malloc(strlen(line_val) + 1);
+
+        literal->type = malloc(32);
+                literal->value = malloc(strlen(buff) + 1);
                 while (line_val[str_len] != ';') {
                         if (isdigit(line_val[str_len])) {
+                                strcpy(literal->type, "INT_LITERAL");
                                 buff[i++] = line_val[str_len++];
-                        } else if ( // isdigit(line_val[str_len]) ||
+                        } else if ( // isdigit(line_val[str_len])
                             line_val[str_len] == '.') {
+                                strcpy(literal->type, "FLOAT_LITERAL");
                                 buff[i++] = line_val[str_len++];
-                        } else if (isalpha(line_val[str_len]) || line_val[str_len] == ' ') {
+
+                        } else if (isalpha(line_val[str_len]) ||
+                                   line_val[str_len] == ' ') {
+                                strcpy(literal->type, "CHAR_LITERAL");
                                 buff[i++] = line_val[str_len++];
                         } else
                                 str_len++;
                 }
                 buff[i] = '\0';
-                return buff;
+                strcpy(literal->value, buff);
+
+                free(buff);
+                return literal;
         }
 
-        return recursive_literal_extractor(line_val, buff, str_len + 1);
+        return recursive_literal_extractor(line_val, str_len + 1);
 }
 
 void *parse_literals(char *input_line) {
 
         // int len = strlen(input_line);
-        char *buff = malloc(strlen(input_line) + 1);
+        // char *buff = malloc(strlen(input_line) + 1);
 
-        char *result = recursive_literal_extractor(input_line, buff, 0);
-        printf("Extracted literal: %s\n", result);
+        Literals *result = recursive_literal_extractor(input_line, 0);
+        printf("Literal: type: %s\tValue: %s\n", result->type, result->value);
 
-        free(buff);
+        free(result->type);
+        free(result->value);
+        free(result);
         return 0;
 }
 
@@ -239,6 +263,7 @@ void *parse_punctuators(char *input_line) {
 }
 
 void lexical_analyzer(const char *file_name) {
+
         printf("This is Lexical Analyzer section\n");
         FILE *file;
         file = fopen(file_name, "r");
@@ -260,6 +285,8 @@ void lexical_analyzer(const char *file_name) {
 
         fclose(file);
         printToken();
+
+        return;
 }
 
 void printToken() {

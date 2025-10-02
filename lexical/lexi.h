@@ -14,6 +14,11 @@ typedef struct tokens {
         struct tokens *next;
 } tokenizer;
 
+typedef struct {
+        char *type;
+        char *value;
+} Literals;
+
 bool isKeyword(const char *);
 bool isOperators(const char *);
 bool isPunctuator(const char *);
@@ -24,7 +29,7 @@ void *insert_to_tokens(const char *, char *, tokenizer **);
 void *parse_operators(char *);
 void *parse_keywords(char *);
 void *parse_identifiers(char *);
-char* recursive_literal_extractor(const char*, char*, int);
+Literals *recursive_literal_extractor(const char *, int);
 void *parse_literals(char *);
 
 void lexical_analyzer(const char *);
