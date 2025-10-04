@@ -176,51 +176,57 @@ bool isPunctuator(const char *word) {
 
 /* recursively extracts literal */
 Literals *recursive_literal_extractor(const char *line_val, int str_len) {
-
-        Literals *literal = malloc(sizeof(Literals));
-        if (!literal) {
-                fprintf(stderr, "Error while allocation.");
-                exit(EXIT_FAILURE);
-        }
-
         if (line_val[str_len] == '\0') {
+                Literals *literal = malloc(sizeof(Literals));
+                if (!literal) {
+                        fprintf(stderr, "Error while allocating memory.\n");
+                        free(literal);
+                }
                 literal->type = NULL;
                 literal->value = NULL;
+                literal->error_msg = NULL;
 
-                // buff[0] = '\0';
                 return literal;
         }
 
         if (line_val[str_len] == '=') {
                 str_len++;
-                int i = 0;
+                while (isspace(line_val[str_len]))
+                        str_len++;
 
-                char *buff = malloc(strlen(line_val) + 1);
-                literal->type = malloc(64);
-                while (line_val[str_len] != ';') {
-                        if (line_val[str_len] == '.') {
-                                strcpy(literal->type, "FLOAT");
-                                buff[i++] = line_val[str_len++];
-                        } else if (isdigit(line_val[str_len])) {
-                                strcpy(literal->type, "INT");
-                                buff[i++] = line_val[str_len++];
-                        } else if (line_val[str_len] == ' ' ||
-                                   isalpha(line_val[str_len])) {
-                                strcpy(literal->type, "CHAR");
-                                buff[i++] = line_val[str_len++];
-                        } else {
-                                str_len++;
-                        }
+                char *buffer = malloc(strlen(line_val) + 1);
+                if (!buffer) {
+                        fprintf(stderr, "Error while allocating memory.\n");
+                        free(buffer);
                 }
-                buff[i] = '\0';
-                literal->value = malloc(strlen(buff) + 1);
-                strcpy(literal->value, buff);
-                free(buff);
 
-                return literal;
+                int i = 0;
+                if (line_val[str_len] == '\'') {
+                        // char var = 's'; || char var = '';
+                        str_len++;
+
+                        Literals *literal = malloc(sizeof(Literals));
+
+                        if (line_val[str_len] != '\0' &&
+                            line_val[str_len + 1] == '\'') {
+                                buffer[i++] = line_val[str_len++];
+                                buffer[i] = '\0';
+
+                                literal->type = strdup("Character");
+                                literal->value = strdup(buffer);
+                                literal->error_msg = NULL;
+
+                        } else {
+                                literal->type = strdup("CHARACTER");
+                                literal->value = strdup("Invalid character");
+                                literal->error_msg = strdup("Invalid Literal.");
+                        }
+
+                        free(buffer);
+                        return literal;
+                }
         }
 
-        free(literal);
         return recursive_literal_extractor(line_val, str_len + 1);
 }
 
@@ -228,10 +234,20 @@ void *parse_literals(char *input_line) {
 
         Literals *is_literal = recursive_literal_extractor(input_line, 0);
 
-        if (is_literal->type && is_literal->value)
-                printf("valid literals: type: %s\tValue: %s\n",
-                       is_literal->type, is_literal->value);
+        if (is_literal->type && is_literal->value &&
+            !is_literal->error_msg)
+                printf("Literal: type: %s\tValue: %s\n", is_literal->type,
+                       is_literal->value);
 
+        if (is_literal->error_msg) {
+                printf("Error\n");
+                printf(" |\n");
+                printf("  -Literal: type: %s\tvalue: %s\terror_msg: %s\n",
+                       is_literal->type, is_literal->value,
+                       is_literal->error_msg);
+        }
+
+        free(is_literal->error_msg);
         free(is_literal->value);
         free(is_literal->type);
         free(is_literal);

@@ -17,6 +17,7 @@ typedef struct tokens {
 typedef struct {
         char *type;
         char *value;
+        char *error_msg;
 } Literals;
 
 bool isKeyword(const char *);
