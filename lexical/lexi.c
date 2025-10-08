@@ -191,38 +191,42 @@ Literals *recursive_literal_extractor(const char *line_val, int str_len) {
 
         if (line_val[str_len] == '=') {
                 str_len++;
-                while (isspace(line_val[str_len]))
+                while (isspace(line_val[str_len]) && line_val[str_len] != ';')
                         str_len++;
 
                 char *buffer = malloc(strlen(line_val) + 1);
                 if (!buffer) {
                         fprintf(stderr, "Error while allocating memory.\n");
                         free(buffer);
+                        exit(EXIT_FAILURE);
                 }
-
                 int i = 0;
+
+                Literals *literal = malloc(sizeof(Literals));
+
                 if (line_val[str_len] == '\'') {
                         // char var = 's'; || char var = '';
                         str_len++;
-
-                        Literals *literal = malloc(sizeof(Literals));
 
                         if (line_val[str_len] != '\0' &&
                             line_val[str_len + 1] == '\'') {
                                 buffer[i++] = line_val[str_len++];
                                 buffer[i] = '\0';
 
-                                literal->type = strdup("Character");
+                                literal->type = strdup("CHARACTER");
                                 literal->value = strdup(buffer);
                                 literal->error_msg = NULL;
-
+                                free(buffer);
                         } else {
-                                literal->type = strdup("CHARACTER");
-                                literal->value = strdup("Invalid character");
-                                literal->error_msg = strdup("Invalid Literal.");
+                                goto catch_error;
                         }
-
+                        return literal;
+                } else {
+                catch_error:
                         free(buffer);
+                        literal->type = strdup("CHARACTER");
+                        literal->value = NULL;
+                        literal->error_msg = strdup("Invalid literal");
                         return literal;
                 }
         }
@@ -234,18 +238,19 @@ void *parse_literals(char *input_line) {
 
         Literals *is_literal = recursive_literal_extractor(input_line, 0);
 
-        if (is_literal->type && is_literal->value &&
-            !is_literal->error_msg)
-                printf("Literal: type: %s\tValue: %s\n", is_literal->type,
+        if (is_literal->type && is_literal->value && !is_literal->error_msg)
+                printf("\nLiteral: type: %s\tValue: %s\n", is_literal->type,
                        is_literal->value);
 
-        if (is_literal->error_msg) {
-                printf("Error\n");
-                printf(" |\n");
-                printf("  -Literal: type: %s\tvalue: %s\terror_msg: %s\n",
-                       is_literal->type, is_literal->value,
-                       is_literal->error_msg);
-        }
+        /*
+            if (is_literal->error_msg != NULL) {
+                    printf("Error\n");
+                    printf(" |\n");
+                    printf("  -Literal: type: %s\tvalue: %s\terror_msg: %s\n",
+                           is_literal->type, is_literal->value,
+                           is_literal->error_msg);
+            }
+        */
 
         free(is_literal->error_msg);
         free(is_literal->value);
