@@ -9,6 +9,8 @@
 tokenizer *head = NULL;
 // static char delimeter[] = " ";
 
+const char *format_specifier[] = {"%d", "%s", "%c", "%f", "%lf", "%ld", "NULL"};
+
 const char *keyword_dict[] = {
     "include", "int",  "continue", "if",       "else", "return",
     "void",    "char", "float",    "double",   "void", "short",
@@ -20,7 +22,7 @@ const char *operators_dict[] = {"+",  "-",  "*",  "/",  "%",  "=",  "&&",
                                 "%=", ">",  "<",  ">=", "<=", NULL};
 
 const char *punc_dict[] = {"}", "{", ")", "(", "]", "[",
-                           "?", ":", ";", ",", NULL};
+                           "?", ":", ";", ",", ".", NULL};
 
 void *insert_to_list(const char *value, char *type) {
 
