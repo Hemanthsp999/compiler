@@ -110,7 +110,7 @@ void *parse_operators(char *input_line) {
 
         char buffer[3] = {0};
         int len = strlen(input_line);
-        for (int i = 0; i < len; i++) {
+        for (int i = 0; i < len - 1; i++) {
                 buffer[0] = input_line[i];
                 buffer[1] = input_line[i + 1];
                 buffer[2] = '\0';
@@ -132,6 +132,7 @@ void *parse_operators(char *input_line) {
 }
 
 bool isIdentifier(const char *word) {
+
         if (!isKeyword(word) && !isPunctuator(word) && !isOperators(word))
                 return true;
         return false;
@@ -283,6 +284,7 @@ void *parse_punctuators(char *input_line) {
         }
         return 0;
 }
+
 
 void lexical_analyzer(const char *file_name) {
 
