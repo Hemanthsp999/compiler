@@ -285,6 +285,7 @@ void *parse_punctuators(char *input_line) {
         return 0;
 }
 
+void validator() {}
 
 void lexical_analyzer(const char *file_name) {
 
@@ -298,12 +299,9 @@ void lexical_analyzer(const char *file_name) {
         }
 
         char buffer[1024];
+        int current_idx = 0;
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                parse_keywords(buffer);
-                parse_operators(buffer);
-                parse_punctuators(buffer);
-                parse_identifiers(buffer);
-                parse_literals(buffer);
+                printf("Line %d: value: %s", current_idx++, buffer);
         }
         rewind(file);
 
