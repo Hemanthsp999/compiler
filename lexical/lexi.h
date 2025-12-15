@@ -20,6 +20,8 @@ typedef struct {
         char *error_msg;
 } Literals;
 
+extern char keywords;
+
 bool isKeyword(const char *);
 bool isOperators(const char *);
 bool isPunctuator(const char *);
@@ -34,6 +36,7 @@ Literals *recursive_literal_extractor(const char *, int);
 void *parse_literals(char *);
 
 void lexical_analyzer(const char *);
+void init_validator(char *);
 void printToken();
 void free_tokens();
 
