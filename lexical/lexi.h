@@ -20,8 +20,6 @@ typedef struct {
         char *error_msg;
 } Literals;
 
-extern char keywords;
-
 bool isKeyword(const char *);
 bool isOperators(const char *);
 bool isPunctuator(const char *);

@@ -46,6 +46,11 @@ void *insert_to_list(const char *value, char *type) {
         return new_token;
 }
 
+const char *keywords[] = {"int",    "if",    "else",    "float", "char",
+                          "double", "while", "include", NULL};
+
+const char *punctuators[] = {"}", "{", "]", "[", ")", "(", NULL};
+
 void lexical_analyzer(const char *file_name) {
 
         printf("This is Lexical Analyzer section\n");
@@ -57,14 +62,15 @@ void lexical_analyzer(const char *file_name) {
                 return;
         }
 
-        enum keywords key;
-
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-
                 for (int i = 0; buffer[i] != '\0'; i++) {
-                        if (buffer[i] == key) {
-                                printf("# found!\n");
+
+                        for (int j = 0; punctuators[j] != NULL; j++) {
+                                if (strncmp(&buffer[i], punctuators[j],
+                                            strlen(punctuators[j])) == 0) {
+                                        printf("Found: %s\n", punctuators[j]);
+                                }
                         }
                 }
         }
