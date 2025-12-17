@@ -50,6 +50,25 @@ const char *keywords[] = {"int",    "if",    "else",    "float", "char",
                           "double", "while", "include", NULL};
 
 const char *punctuators[] = {"}", "{", "]", "[", ")", "(", NULL};
+const char *operators[] = {"=", "==", "++", "--", "+=", "*=", "/", "%", NULL};
+
+bool isPunctuator(char c) {
+        for (int i = 0; punctuators[i] != NULL; i++) {
+                if (c == punctuators[i][0])
+                        return true;
+        }
+
+        return false;
+}
+
+bool isOperator(char char_1, char char_2) {
+
+        for (int i = 0; operators[i] != NULL; i++) {
+
+                if (char_1 == operators[i][0])
+        }
+        return false;
+}
 
 void lexical_analyzer(const char *file_name) {
 
@@ -64,13 +83,26 @@ void lexical_analyzer(const char *file_name) {
 
         char buffer[1024];
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
+                // parsing punctuator
                 for (int i = 0; buffer[i] != '\0'; i++) {
+                        char *temp_op1 = &buffer[i];
+                        char *temp_op2 = &buffer[i + 1];
 
-                        for (int j = 0; punctuators[j] != NULL; j++) {
-                                if (strncmp(&buffer[i], punctuators[j],
-                                            strlen(punctuators[j])) == 0) {
-                                        printf("Found: %s\n", punctuators[j]);
-                                }
+                        if (isPunctuator(buffer[i])) {
+                                char temp[2];
+                                temp[0] = buffer[i];
+                                temp[1] = '\0';
+                                insert_to_list(temp, "PUNCTUATOR");
+
+                        } else if (!(isalpha(*temp_op1) ||
+                                     isalpha(*temp_op2)) &&
+                                   ((*temp_op1 == '=' && *temp_op2 == '=') ||
+                                    (*temp_op1 == '-' || *temp_op2 == '-'))) {
+                                char temp_op[3];
+                                temp_op[0] = *temp_op1;
+                                temp_op[1] = *temp_op2;
+                                temp_op[2] = '\0';
+                                insert_to_list(temp_op, "OPERATORS");
                         }
                 }
         }

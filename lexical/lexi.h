@@ -21,8 +21,8 @@ typedef struct {
 } Literals;
 
 bool isKeyword(const char *);
-bool isOperators(const char *);
-bool isPunctuator(const char *);
+bool isOperator(char, char);
+bool isPunctuator(char );
 bool isIdentifier(const char *);
 
 void *parse_punctuators(char *);
