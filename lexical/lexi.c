@@ -1,4 +1,5 @@
 #include "lexi.h"
+#include "../logger/log.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -49,7 +50,7 @@ void *insert_to_list(const char *value, char *type) {
 const char *keywords[] = {"int",    "if",    "else",    "float", "char",
                           "double", "while", "include", NULL};
 
-const char *punctuators[] = {"}", "{", "]", "[", ")", "(", NULL};
+const char *punctuators[] = {"}", "{", "]", "[", ")", "(", ";", NULL};
 const char *operators[] = {"=", "==", "++", "--", "+=", "*=", "/", "%", NULL};
 
 bool isPunctuator(char c) {
@@ -63,11 +64,30 @@ bool isPunctuator(char c) {
 
 bool isOperator(char char_1, char char_2) {
 
+        if (isPunctuator(char_1) || isPunctuator(char_2) || isalpha(char_1) ||
+            isalpha(char_2))
+                return false;
+
         for (int i = 0; operators[i] != NULL; i++) {
 
-                if (char_1 == operators[i][0])
+                if (char_1 == operators[i][0] && char_2 == operators[i][0])
+                        return true;
+                else if (char_1 == operators[i][0] || char_2 == operators[i][0])
+                        return true;
         }
         return false;
+}
+
+bool isKeyword(char *word, int i) {
+        if (keywords[i] == NULL) {
+                return false;
+        }
+
+        if (strcmp(word, keywords[i]) == 0) {
+                return true;
+        }
+
+        return isKeyword(word, i + 1);
 }
 
 void lexical_analyzer(const char *file_name) {
@@ -82,27 +102,38 @@ void lexical_analyzer(const char *file_name) {
         }
 
         char buffer[1024];
+        char word[50];
+        int w = 0;
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
                 // parsing punctuator
+
                 for (int i = 0; buffer[i] != '\0'; i++) {
                         char *temp_op1 = &buffer[i];
                         char *temp_op2 = &buffer[i + 1];
 
-                        if (isPunctuator(buffer[i])) {
-                                char temp[2];
-                                temp[0] = buffer[i];
-                                temp[1] = '\0';
-                                insert_to_list(temp, "PUNCTUATOR");
+                        if (isalnum(buffer[i]) || buffer[i] == '_') {
+                                word[w++] = buffer[i];
+                        } else {
+                                if (w > 0) {
+                                        word[w] = '\0';
 
-                        } else if (!(isalpha(*temp_op1) ||
-                                     isalpha(*temp_op2)) &&
-                                   ((*temp_op1 == '=' && *temp_op2 == '=') ||
-                                    (*temp_op1 == '-' || *temp_op2 == '-'))) {
-                                char temp_op[3];
-                                temp_op[0] = *temp_op1;
-                                temp_op[1] = *temp_op2;
-                                temp_op[2] = '\0';
-                                insert_to_list(temp_op, "OPERATORS");
+                                        if (isKeyword(word, 0))
+                                                insert_to_list(word, "KEYWORD");
+                                        w = 0;
+                                }
+                                if (isPunctuator(buffer[i])) {
+                                        char temp[2];
+                                        temp[0] = buffer[i];
+                                        temp[1] = '\0';
+                                        insert_to_list(temp, "PUNCTUATOR");
+
+                                } else if (isOperator(*temp_op1, *temp_op2)) {
+                                        char temp_op[3];
+                                        temp_op[0] = *temp_op1;
+                                        temp_op[1] = *temp_op2;
+                                        temp_op[2] = '\0';
+                                        insert_to_list(temp_op, "OPERATORS");
+                                }
                         }
                 }
         }

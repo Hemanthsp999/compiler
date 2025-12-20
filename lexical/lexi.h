@@ -20,7 +20,7 @@ typedef struct {
         char *error_msg;
 } Literals;
 
-bool isKeyword(const char *);
+bool isKeyword(char *, int);
 bool isOperator(char, char);
 bool isPunctuator(char );
 bool isIdentifier(const char *);
