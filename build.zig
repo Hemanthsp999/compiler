@@ -6,7 +6,7 @@ pub fn build(b: *std.Build) void {
 
     const compiler = b.addStaticLibrary(.{ .name = "compiler for fun", .target = target, .optimize = optimize });
 
-    const c_source_files: [1][]const u8 = .{"./lexical/lexi.c"};
+    const c_source_files: [2][]const u8 = .{ "./lexical/lexi.c", "./logger/log.c" };
 
     compiler.linkLibC();
     for (c_source_files) |file| {

@@ -1,5 +1,4 @@
 #include "lexi.h"
-#include "../logger/log.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -8,7 +7,12 @@
 #include <string.h>
 
 tokenizer *head = NULL;
-// static char delimeter[] = " ";
+const char *header[] = {"stdio", "stdbool"};
+const char *keywords[] = {"int",    "if",    "else",    "float",  "char",
+                          "double", "while", "include", "return", NULL};
+const char *punctuators[] = {"}", "{", "]",  "[", ")",
+                             "(", ";", "\"", ".", NULL};
+const char *operators[] = {"=", "==", "++", "--", "+=", "*=", "/", "%", NULL};
 
 void *insert_to_list(const char *value, char *type) {
 
@@ -47,12 +51,6 @@ void *insert_to_list(const char *value, char *type) {
         return new_token;
 }
 
-const char *keywords[] = {"int",    "if",    "else",    "float", "char",
-                          "double", "while", "include", NULL};
-
-const char *punctuators[] = {"}", "{", "]", "[", ")", "(", ";", NULL};
-const char *operators[] = {"=", "==", "++", "--", "+=", "*=", "/", "%", NULL};
-
 bool isPunctuator(char c) {
         for (int i = 0; punctuators[i] != NULL; i++) {
                 if (c == punctuators[i][0])
@@ -90,6 +88,14 @@ bool isKeyword(char *word, int i) {
         return isKeyword(word, i + 1);
 }
 
+bool isIdentifier(char *word, int i) {
+        if (!isKeyword(word, i) || !isPunctuator(*word)) {
+                return true;
+        }
+
+        return isIdentifier(word, i += 1);
+}
+
 void lexical_analyzer(const char *file_name) {
 
         printf("This is Lexical Analyzer section\n");
@@ -105,7 +111,6 @@ void lexical_analyzer(const char *file_name) {
         char word[50];
         int w = 0;
         while (fgets(buffer, sizeof(buffer), file) != NULL) {
-                // parsing punctuator
 
                 for (int i = 0; buffer[i] != '\0'; i++) {
                         char *temp_op1 = &buffer[i];
@@ -119,6 +124,10 @@ void lexical_analyzer(const char *file_name) {
 
                                         if (isKeyword(word, 0))
                                                 insert_to_list(word, "KEYWORD");
+                                        else if (isIdentifier(word, 0)) {
+                                                insert_to_list(word,
+                                                               "IDENTIFIER");
+                                        }
                                         w = 0;
                                 }
                                 if (isPunctuator(buffer[i])) {

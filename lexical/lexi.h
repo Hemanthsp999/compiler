@@ -22,16 +22,11 @@ typedef struct {
 
 bool isKeyword(char *, int);
 bool isOperator(char, char);
-bool isPunctuator(char );
-bool isIdentifier(const char *);
+bool isPunctuator(char);
+bool isIdentifier(char *, int);
 
-void *parse_punctuators(char *);
 void *insert_to_tokens(const char *, char *, tokenizer **);
-void *parse_operators(char *);
-void *parse_keywords(char *);
-void *parse_identifiers(char *);
-Literals *recursive_literal_extractor(const char *, int);
-void *parse_literals(char *);
+void remove_white_space(char*);
 
 void lexical_analyzer(const char *);
 void init_validator(char *);
