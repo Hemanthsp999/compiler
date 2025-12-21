@@ -1,4 +1,5 @@
 #include "lexi.h"
+#include "../logger/log.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -18,8 +19,7 @@ void *insert_to_list(const char *value, char *type) {
 
         tokenizer *new_token = (tokenizer *)malloc(sizeof(tokenizer));
         if (!new_token) {
-                fprintf(stderr,
-                        "Error while allocating memory for 'new_token'\n");
+                log_error("Error while allocating memory for 'new_token'\n");
                 EXIT_FAILURE;
         }
 
@@ -28,7 +28,7 @@ void *insert_to_list(const char *value, char *type) {
         new_token->next = NULL;
 
         if (!new_token->value || !new_token->type) {
-                fprintf(stderr, "Error in memory allocation\n");
+                log_error("Error in memory allocation\n");
                 free(new_token->value);
                 free(new_token->type);
                 free(new_token);
@@ -98,12 +98,12 @@ bool isIdentifier(char *word, int i) {
 
 void lexical_analyzer(const char *file_name) {
 
-        printf("This is Lexical Analyzer section\n");
+        log_info("This is Lexical Analyzer section\n");
         FILE *file;
         file = fopen(file_name, "r");
 
         if (!file) {
-                fprintf(stderr, "Error while opening the file\n");
+                log_error("Error while opening the file\n");
                 return;
         }
 
