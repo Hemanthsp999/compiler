@@ -147,7 +147,6 @@ void lexical_analyzer(const char *file_name) {
                 }
         }
         rewind(file);
-
         fclose(file);
         printToken();
 
